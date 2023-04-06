@@ -2,11 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Monster : MonoBehaviour
+public class Monster : Health_Management
 {
     
     public float speed = 0.01f;
+    
     public LayerMask layer_colision;
+    public LayerMask layer_bullet;
+
+    public float HitImpactX = -10.0f;
+    public float HitImpactY = 10.0f;
+
+    public GameObject DeathEffect;
 
     private Rigidbody2D _playerRigidbody;
     private SpriteRenderer _spriteRenderer;
@@ -36,18 +43,53 @@ public class Monster : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        //Debug.Log("Detected collision");
-        //Debug.Log(collision.gameObject.layer );
-        //Debug.Log(layer_colision.value);
-        //Debug.Log(LayerMask.LayerToName(layer_colision));
-        // if (collision.gameObject.layer == layer_colision.value) 
-        // {
             Debug.Log("Detected layer_colision");
-
             _currentDirection = -_currentDirection;
-        //}
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        var layer_collision = collision.gameObject.layer;
+
+        if (layer_collision == Mathf.Log(layer_bullet.value, 2))
+        {
+            Debug.Log("yeay");
+            var isSideLeft = true;
+            if (collision.transform.position.x - transform.position.x < 0)
+            {
+                isSideLeft  = false;
+            }
+            Hit(isSideLeft);
+        }
 
     }
+
+    void Hit(bool isSideLeft)
+    {
+        Vector2 hitImpact;
+        if (isSideLeft) {
+            hitImpact = new Vector2( HitImpactX, HitImpactY);
+        } 
+        else 
+        {
+            hitImpact = new Vector2( -HitImpactX, HitImpactY);
+        }
+        _playerRigidbody.AddForce(hitImpact);
+
+        TakeDamage();
+    }
+
+    public override void Death()
+    {
+        Debug.Log("Spawn");
+        Instantiate(DeathEffect, transform.position, transform.rotation);
+        Instantiate(DeathEffect, transform.position, transform.rotation);
+        Instantiate(DeathEffect, transform.position, transform.rotation);
+ 
+        Destroy(gameObject);
+    }
+
+
     void sprite_renderer() 
     {
         if (_currentDirection < 0 ) {
